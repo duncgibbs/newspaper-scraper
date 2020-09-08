@@ -4,6 +4,19 @@ use url::{Url};
 use serde::{Deserialize};
 use reqwest;
 
+pub struct NewspaperDate {
+    pub year: String,
+    pub month: String,
+    pub day: String,
+    pub short: Option<String>
+}
+
+impl NewspaperDate {
+    pub fn to_string(&self) -> String {
+        return format!("{}/{}/{}", self.year, self.month, self.day);
+    }
+}
+
 #[derive(Deserialize)]
 struct OliveResponse {
     pdf: String,
@@ -20,8 +33,8 @@ impl OliveApi {
         }
     }
 
-    pub fn get_pdf_id_from_date(&self, year: String, month: String, day: String) -> Result<String, Box<dyn std::error::Error>> {
-        let olive_api_route = format!("/get/prxml.ashx?kind=doc&href=dok/{}/{}/{}", year, month, day);
+    pub fn get_pdf_id_from_date(&self, date: &NewspaperDate) -> Result<String, Box<dyn std::error::Error>> {
+        let olive_api_route = format!("/get/prxml.ashx?kind=doc&href=dok/{}/{}/{}", date.year, date.month, date.day);
         let request_url = &Url::parse(&format!("{}{}", self.olive_url, olive_api_route))?.into_string();
         let response: OliveResponse = reqwest::blocking::get(request_url)?.json()?;
         Ok(response.pdf)
